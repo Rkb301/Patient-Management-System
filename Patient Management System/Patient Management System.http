@@ -1,0 +1,10 @@
+@rootAddr = http://localhost:5265
+
+GET {{rootAddr}}/weatherforecast/
+Accept: application/json
+
+###
+
+
+GET {{rootAddr}}/Patient
+Accept: application/json
