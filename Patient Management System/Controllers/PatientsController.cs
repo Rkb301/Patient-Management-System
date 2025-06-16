@@ -9,16 +9,20 @@ public class PatientController : ControllerBase
 {
     private readonly PatientContext _context;
 
+
+    // Context creation for db
     public PatientController(PatientContext context)
     {
         _context = context;
     }
 
-    // Existing ID-based endpoints
+    // Get All
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Patient>>> GetAll()
         => await _context.Patients.ToListAsync();
 
+
+    // ID Get
     [HttpGet("{id}")]
     public async Task<ActionResult<Patient>> GetById(int id)
     {
@@ -26,6 +30,8 @@ public class PatientController : ControllerBase
         return patient == null ? NotFound() : Ok(patient);
     }
 
+
+    // ID Create
     [HttpPost]
     public async Task<ActionResult<Patient>> Create(Patient patient)
     {
@@ -34,6 +40,8 @@ public class PatientController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = patient.PatientId }, patient);
     }
 
+
+    // ID Update
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, Patient patient)
     {
@@ -43,6 +51,8 @@ public class PatientController : ControllerBase
         return NoContent();
     }
 
+
+    // ID Delete
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -53,7 +63,7 @@ public class PatientController : ControllerBase
         return NoContent();
     }
 
-    // New email-based endpoints
+    // Email GET
     [HttpGet("by-email/{email}")]
     public async Task<ActionResult<Patient>> GetByEmail(string email)
     {
@@ -61,6 +71,8 @@ public class PatientController : ControllerBase
         return patient == null ? NotFound() : Ok(patient);
     }
 
+
+    // Email Update
     [HttpPut("by-email/{email}")]
     public async Task<IActionResult> UpdateByEmail(string email, Patient updatedPatient)
     {
@@ -70,7 +82,7 @@ public class PatientController : ControllerBase
         var existingPatient = await _context.Patients.FirstOrDefaultAsync(p => p.Email == email);
         if (existingPatient == null) return NotFound();
 
-        // Update all fields except Email and PatientId
+        // Update other fields
         existingPatient.Name = updatedPatient.Name;
         existingPatient.Phone = updatedPatient.Phone;
         existingPatient.Gender = updatedPatient.Gender;
@@ -82,6 +94,8 @@ public class PatientController : ControllerBase
         return NoContent();
     }
 
+
+    // Email Delete
     [HttpDelete("by-email/{email}")]
     public async Task<IActionResult> DeleteByEmail(string email)
     {
