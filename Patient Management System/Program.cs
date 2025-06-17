@@ -36,6 +36,9 @@ public class Program
             app.MapOpenApi();
         }
 
+        app.UseSerilogRequestLogging();
+        app.UseMiddleware<ErrorHandlingMiddleware>();
+        
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
