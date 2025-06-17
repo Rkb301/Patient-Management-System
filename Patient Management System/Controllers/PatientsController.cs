@@ -8,19 +8,35 @@ using Patient_Management_System.Models;
 public class PatientController : ControllerBase
 {
     private readonly PatientContext _context;
+    private readonly ILogger<PatientController> _logger;
 
 
     // Context creation for db
-    public PatientController(PatientContext context)
+    public PatientController(PatientContext context, ILogger<PatientController> logger)
     {
         _context = context;
+        _logger = logger;
+        _logger.LogInformation("PatientController initialized");
     }
 
     // Get All
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Patient>>> GetAll()
-        => await _context.Patients.ToListAsync();
-
+    {
+        _logger.LogInformation("Fetching all patients");
+        try
+        {
+            var patients = await _context.Patients.ToListAsync();
+            _logger.LogInformation("Fetched {PatientCount} patients", patients.Count);
+            return Ok(patients);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch patients");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+    
 
     // ID Get
     [HttpGet("{id}")]
@@ -105,5 +121,52 @@ public class PatientController : ControllerBase
         _context.Patients.Remove(patient);
         await _context.SaveChangesAsync();
         return NoContent();
+    }
+    
+    
+    // General querying
+    [HttpGet("/search")]
+    public async Task<ActionResult<IEnumerable<Patient>>> GetWithParams([FromQuery] QueryParams param)
+    {
+        var query = _context.Patients.AsQueryable();
+
+        if (param.Id != null && param.Id.Any())
+            query = query.Where(p => param.Id.Contains(p.PatientId));
+        
+        if (param.Name != null && param.Name.Any())
+            query = query.Where(p => param.Name.Contains(p.Name));
+        
+        if (param.Email != null && param.Email.Any())
+            query = query.Where(p => param.Email.Contains(p.Email));
+        
+        if (param.Phone != null && param.Phone.Any())
+            query = query.Where(p => param.Phone.Contains(p.Phone));
+        
+        if (param.Gender != null && param.Gender.Any())
+            query = query.Where(p => param.Gender.Contains(p.Gender));
+        
+        if (param.Blood != null && param.Blood.Any())
+            query = query.Where(p => param.Blood.Contains(p.BloodGroup));
+        
+        if (param.Dob != null && param.Dob.Any())
+            query = query.Where(p => param.Dob.Contains(p.DateOfBirth));
+        
+        if (param.Status != null && param.Status.Any())
+            query = query.Where(p => param.Status.Contains(p.Status));
+
+
+        return await query.ToListAsync();
+    }
+    
+    public class QueryParams
+    {
+        public List<int>? Id { get; set; }
+        public List<string>? Name { get; set; }
+        public List<string>? Email { get; set; }
+        public List<string>? Phone { get; set; }
+        public List<Gender>? Gender { get; set; }
+        public List<BloodGroup>? Blood { get; set; }
+        public List<DateTime>? Dob { get; set; }
+        public List<Status>? Status { get; set; }
     }
 }

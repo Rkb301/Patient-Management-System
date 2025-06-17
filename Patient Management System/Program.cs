@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Patient_Management_System.Data;
+using Serilog;
 
 namespace Patient_Management_System;
 
@@ -11,6 +12,9 @@ public class Program
 
         // Add services to the container.
 
+        builder.Host.UseSerilog((context, config) =>
+            config.ReadFrom.Configuration(context.Configuration));
+        
         builder.Services.AddControllers();
         
         builder.Services.AddOpenApi();
